@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#292929">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WΛVΞSCAN">
+  <meta name="application-name" content="WΛVΞSCAN">
+  <title>WΛVΞSCAN — Wi-Fi Analyzer</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- TOP TOOLBAR -->
+  <header class="top-toolbar">
+    <button class="tb-btn" id="btn-back" title="Back" aria-label="Back">
+      <svg viewBox="0 0 24 24" class="tb-icon">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/>
+      </svg>
+    </button>
+
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" class="search-icon">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor"/>
+      </svg>
+      <input type="text" id="search-input" placeholder="Search SSID..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="clear-search-btn" id="btn-clear-search" aria-label="Clear Search">&times;</button>
+    </div>
+
+    <button class="tb-btn" id="btn-filter" title="Filter & Options" aria-label="Filter">
+      <svg viewBox="0 0 24 24" class="tb-icon">
+        <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" fill="currentColor"/>
+      </svg>
+      <span class="filter-indicator" id="filter-indicator"></span>
+    </button>
+  </header>
+
+  <!-- FILTER & OPTIONS MODAL / POPUP -->
+  <div class="modal-overlay" id="filter-modal">
+    <div class="filter-menu">
+      <div class="filter-header">
+        <span class="filter-title">Filter & Sort</span>
+        <button class="close-modal-btn" id="btn-close-filter">&times;</button>
+      </div>
+
+      <div class="filter-section-title">SECURITY & SIGNAL</div>
+      <div class="filter-options">
+        <label class="filter-option">
+          <input type="radio" name="filter-type" value="all" checked>
+          <span class="radio-mark"></span>
+          <span>All networks</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="filter-type" value="secured">
+          <span class="radio-mark"></span>
+          <span>Secured networks</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="filter-type" value="open">
+          <span class="radio-mark"></span>
+          <span>Open networks</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="filter-type" value="strong">
+          <span class="radio-mark"></span>
+          <span>Strong signals (&ge; -65 dBm)</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="filter-type" value="weak">
+          <span class="radio-mark"></span>
+          <span>Weak signals (&lt; -75 dBm)</span>
+        </label>
+      </div>
+
+      <div class="filter-section-title">SORT BY</div>
+      <div class="filter-options">
+        <label class="filter-option">
+          <input type="radio" name="sort-type" value="rssi" checked>
+          <span class="radio-mark"></span>
+          <span>Signal Strength (dBm)</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="sort-type" value="ssid">
+          <span class="radio-mark"></span>
+          <span>Network Name (SSID)</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="sort-type" value="channel">
+          <span class="radio-mark"></span>
+          <span>Channel Number</span>
+        </label>
+      </div>
+
+      <div class="filter-actions">
+        <button class="action-btn secondary" id="btn-reset-filter">Reset</button>
+        <button class="action-btn primary" id="btn-apply-filter">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN SCROLLABLE CONTENT AREA -->
+  <main class="main-content">
+    <!-- SUB-STATUS BAR -->
+    <div class="sub-status-bar">
+      <div class="status-left">
+        <span class="pulse-dot" id="live-dot"></span>
+        <span class="app-brand-badge">WΛVΞSCAN</span>
+        <span class="status-sep">|</span>
+        <span id="network-count-text">Scanning...</span>
+      </div>
+      <div class="status-right">
+        <button class="scan-btn" id="btn-scan-now" title="Trigger Scan">
+          <svg viewBox="0 0 24 24" class="btn-icon">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
+          </svg>
+          <span id="scan-btn-label">Scan</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: LIST VIEW (DEFAULT) -->
+    <section class="tab-view active" id="tab-list">
+      <div class="network-list-container" id="network-list">
+        <!-- Dense network rows injected here -->
+        <div class="empty-state" id="empty-state">
+          <div class="spinner"></div>
+          <p>Scanning 2.4 GHz Wi-Fi spectrum...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: CHANNELS VIEW -->
+    <section class="tab-view" id="tab-channels">
+      <div class="channels-container">
+        <div class="section-banner">
+          <span class="banner-title">2.4 GHz SPECTRUM DISTRIBUTION</span>
+          <span class="banner-sub" id="ch-active-summary">0 Active Channels</span>
+        </div>
+
+        <!-- SVG Channel Graph -->
+        <div class="spectrum-graph-card">
+          <svg id="spectrum-svg" viewBox="0 0 380 200" preserveAspectRatio="none">
+            <!-- Channel grid, frequency curves injected by app.js -->
+          </svg>
+          <div class="spectrum-x-axis">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span>
+          </div>
+        </div>
+
+        <!-- Channel Congestion Summary List -->
+        <div class="channel-breakdown-title">CHANNEL OCCUPANCY</div>
+        <div class="channel-cards-list" id="channel-breakdown-list">
+          <!-- Channel cards injected by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: DISCOVERY VIEW (DETAIL INSPECTOR) -->
+    <section class="tab-view" id="tab-discovery">
+      <div class="discovery-container">
+        <!-- Network Selector Picker -->
+        <div class="discovery-picker-row">
+          <label for="discovery-select">TARGET NETWORK:</label>
+          <select id="discovery-select">
+            <option value="">-- Choose a network to inspect --</option>
+          </select>
+        </div>
+
+        <div id="discovery-details" class="discovery-details-wrap">
+          <div class="no-selection-msg">
+            <p>Select a network from the List tab or choose above to view deep diagnostic details, signal telemetry, and assign location tags.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: SPEED TEST & DIAGNOSTICS VIEW -->
+    <section class="tab-view" id="tab-diagnostics">
+      <div class="diagnostics-container">
+        <div class="section-banner">
+          <span class="banner-title">WΛVΞSCAN HARDWARE & SYSTEM STATUS</span>
+          <span class="banner-sub" id="diag-uptime">Uptime: --</span>
+        </div>
+
+        <div class="diag-table">
+          <div class="diag-row">
+            <span class="diag-key">Connection Mode</span>
+            <span class="diag-val" id="diag-mode">ESP32 Station (STA)</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">Hotspot / AP SSID</span>
+            <span class="diag-val" id="diag-ssid">--</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">ESP32 IP Address</span>
+            <span class="diag-val highlight" id="diag-ip">--</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">ESP32 MAC Address</span>
+            <span class="diag-val" id="diag-mac">--</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">Free Heap Memory</span>
+            <span class="diag-val" id="diag-heap">-- KB</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">Last Scan Duration</span>
+            <span class="diag-val" id="diag-duration">-- ms</span>
+          </div>
+          <div class="diag-row">
+            <span class="diag-key">Total APs Detected</span>
+            <span class="diag-val" id="diag-total-ap">0</span>
+          </div>
+        </div>
+
+        <!-- BENCHMARKS & TESTS -->
+        <div class="channel-breakdown-title">LINK & SPEED BENCHMARKS</div>
+
+        <div class="diag-card">
+          <div class="diag-card-header">
+            <span class="diag-card-title">Wi-Fi Link Ping Test</span>
+            <span class="diag-card-stat" id="ping-result">-- ms</span>
+          </div>
+          <p class="diag-card-desc">Measures roundtrip packet latency between this Android phone and the ESP32 microcontroller.</p>
+          <button class="action-btn secondary full-width" id="btn-run-ping">Ping ESP32</button>
+        </div>
+
+        <div class="diag-card">
+          <div class="diag-card-header">
+            <span class="diag-card-title">Local Wi-Fi Throughput</span>
+            <span class="diag-card-stat" id="throughput-result">-- Mbps</span>
+          </div>
+          <p class="diag-card-desc">Transfers raw payload over local Wi-Fi to benchmark physical wireless link capacity without burning mobile data.</p>
+          <button class="action-btn secondary full-width" id="btn-run-throughput">Test Local Throughput</button>
+        </div>
+
+        <!-- EXPORT & STORAGE -->
+        <div class="channel-breakdown-title">DATA EXPORT & PWA APP</div>
+        <div class="export-actions-row">
+          <button class="action-btn success full-width" id="btn-install-pwa">
+            <svg viewBox="0 0 24 24" class="btn-icon">
+              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" fill="currentColor"/>
+            </svg>
+            Download / Install WΛVΞSCAN App
+          </button>
+          <a class="action-btn primary full-width" id="btn-export-csv" href="/api/history.csv" download="wavescan_history.csv">
+            <svg viewBox="0 0 24 24" class="btn-icon">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/>
+            </svg>
+            Export CSV History
+          </a>
+          <button class="action-btn danger full-width" id="btn-clear-localstorage">Reset Best RSSI Records</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FIXED BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="tab-list">
+      <svg viewBox="0 0 24 24" class="nav-icon">
+        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">List</span>
+    </button>
+
+    <button class="nav-item" data-tab="tab-channels">
+      <svg viewBox="0 0 24 24" class="nav-icon">
+        <path d="M5 9.2h3V19H5zM10.5 5h3v14h-3zm5.5 8h3v6h-3z" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">Channels</span>
+    </button>
+
+    <button class="nav-item" data-tab="tab-discovery">
+      <svg viewBox="0 0 24 24" class="nav-icon">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">Discovery</span>
+    </button>
+
+    <button class="nav-item" data-tab="tab-diagnostics">
+      <svg viewBox="0 0 24 24" class="nav-icon">
+        <path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.28-10.43zM10.59 15.41a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">Speed Test</span>
+    </button>
+  </nav>
+
+  <!-- PWA INSTALL BANNER -->
+  <div class="pwa-install-banner" id="pwa-banner">
+    <div class="pwa-banner-content">
+      <img src="/icons/icon-192.png" alt="WΛVΞSCAN" class="pwa-banner-icon">
+      <div class="pwa-banner-text">
+        <div class="pwa-banner-title">Install WΛVΞSCAN</div>
+        <div class="pwa-banner-sub">Install to home screen for fullscreen analyzer experience</div>
+      </div>
+      <button class="action-btn success pwa-install-btn" id="btn-banner-install">Install</button>
+      <button class="pwa-banner-close" id="btn-banner-dismiss">&times;</button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install WΛVΞSCAN — Web Flasher for ESP32</title>
+  <meta name="description" content="1-Click Web Flasher for WΛVΞSCAN: High-performance 2.4 GHz Wi-Fi Analyzer for ESP32-WROOM-32 and Android. Zero software installation required.">
+  <link rel="icon" type="image/svg+xml" href="data/icons/icon.svg">
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root {
+      --bg-main: #1e1e24;
+      --bg-card: #282a36;
+      --bg-panel: #20232b;
+      --accent-green: #00c99a;
+      --accent-cyan: #20bceb;
+      --accent-yellow: #ffd600;
+      --accent-red: #e65345;
+      --text-primary: #f0f0f5;
+      --text-secondary: #9a9ea8;
+      --border-color: #383b4a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(180deg, #181920 0%, #20232b 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 64px;
+    }
+
+    .container {
+      max-width: 760px;
+      width: 100%;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 201, 154, 0.12);
+      border: 1px solid rgba(0, 201, 154, 0.35);
+      padding: 6px 14px;
+      border-radius: 20px;
+      color: var(--accent-green);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* MAIN INSTALL CARD */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      margin-bottom: 28px;
+    }
+
+    .flash-cta-box {
+      text-align: center;
+      padding: 24px 16px;
+      background: rgba(32, 188, 235, 0.04);
+      border: 1px dashed rgba(32, 188, 235, 0.3);
+      border-radius: 12px;
+      margin-bottom: 28px;
+    }
+
+    .flash-btn-wrapper {
+      margin: 18px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Custom Web Flasher Button Style */
+    esp-web-install-button {
+      --esp-tools-button-border-radius: 10px;
+      --esp-tools-button-color: #ffffff;
+      --esp-tools-button-background: #00c99a;
+      --esp-tools-button-padding: 14px 28px;
+      --esp-tools-button-font-size: 16px;
+      --esp-tools-button-font-weight: 700;
+    }
+
+    .custom-flash-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #00c99a 0%, #009e78 100%);
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 700;
+      padding: 15px 32px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(0, 201, 154, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .custom-flash-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 26px rgba(0, 201, 154, 0.55);
+    }
+
+    .custom-flash-btn:active {
+      transform: translateY(1px);
+    }
+
+    .browser-compat-note {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 10px;
+    }
+
+    .browser-compat-note strong {
+      color: var(--accent-cyan);
+    }
+
+    .compat-warning {
+      background: rgba(230, 83, 69, 0.12);
+      border: 1px solid var(--accent-red);
+      color: #ff9d94;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      margin-top: 14px;
+      text-align: left;
+    }
+
+    /* 3-STEP FLOW */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 680px) {
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        padding: 22px 16px;
+      }
+      h1 {
+        font-size: 30px;
+      }
+    }
+
+    .step-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px 16px;
+      position: relative;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      color: #12141a;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .code-pill {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--accent-green);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* SPECS & DETAILS */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 540px) {
+      .specs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .spec-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-panel);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+
+    .spec-label {
+      color: var(--text-secondary);
+    }
+
+    .spec-val {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* TERMINAL & CLI BOX */
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cli-box {
+      background: #14151b;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      color: #9feaf9;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header>
+      <div class="brand-badge">⚡ Official Web Installer</div>
+      <h1>WΛVΞSCAN</h1>
+      <p class="subtitle">
+        Portable Mobile-First 2.4 GHz Wi-Fi Analyzer for ESP32-WROOM-32 & Android.
+        Flash firmware directly from your browser with <strong>₹0 hardware budget</strong> & zero software installation.
+      </p>
+    </header>
+
+    <!-- MAIN INSTALL CARD -->
+    <div class="card">
+      <div class="flash-cta-box">
+        <h2 style="font-size: 22px; margin-bottom: 6px;">Connect & Flash Your ESP32</h2>
+        <p style="color: var(--text-secondary); font-size: 14px;">
+          Plug your ESP32-WROOM-32 board into this PC via USB, then click the button below.
+        </p>
+
+        <div class="flash-btn-wrapper">
+          <esp-web-install-button manifest="./manifest.json">
+            <button slot="activate" class="custom-flash-btn">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+              </svg>
+              Flash WΛVΞSCAN Firmware
+            </button>
+            <div slot="unsupported">
+              <div class="compat-warning">
+                <strong>⚠️ Web Serial Not Supported</strong><br>
+                Please open this page in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> on Windows, macOS, Linux, or Android with OTG to enable 1-click web flashing.
+              </div>
+            </div>
+            <div slot="not-allowed">
+              <div class="compat-warning">
+                <strong>🔒 HTTPS Required</strong><br>
+                Web Serial requires a secure HTTPS context or localhost.
+              </div>
+            </div>
+          </esp-web-install-button>
+        </div>
+
+        <p class="browser-compat-note">
+          Supported browsers: <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Opera</strong> (Desktop & Android OTG)
+        </p>
+      </div>
+
+      <!-- 3-STEP QUICKSTART -->
+      <h3 class="section-title">🚀 How It Works</h3>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-title">Connect via USB</div>
+          <div class="step-desc">
+            Connect your ESP32-WROOM-32 board to your computer using a micro-USB / USB-C data cable.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-title">Flash Firmware</div>
+          <div class="step-desc">
+            Click <strong>Flash WΛVΞSCAN</strong> above, select your ESP32 port (CP2102 or CH340), and wait ~30 seconds for verification.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-title">Connect & Scan</div>
+          <div class="step-desc">
+            Connect your phone Wi-Fi to:<br>
+            <span class="code-pill">SSID: WΛVΞSCAN</span><br>
+            <span class="code-pill">Pass: wavescan123</span><br>
+            Open <span class="code-pill">http://192.168.4.1/</span> in Chrome!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL SPECS -->
+    <div class="card">
+      <h3 class="section-title">⚙️ Firmware Configuration</h3>
+      <div class="specs-grid">
+        <div class="spec-item">
+          <span class="spec-label">Target Chip</span>
+          <span class="spec-val">ESP32-WROOM-32 (2.4 GHz)</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Default Broadcast SSID</span>
+          <span class="spec-val" style="color: var(--accent-green);">WΛVΞSCAN</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Default AP Password</span>
+          <span class="spec-val">wavescan123</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Default IP Gateway</span>
+          <span class="spec-val">192.168.4.1</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Web UI Storage</span>
+          <span class="spec-val">PROGMEM + LittleFS Fallback</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">PWA Offline Mode</span>
+          <span class="spec-val">Supported (CacheStorage)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL ESPTOOL OPTION -->
+    <div class="card">
+      <h3 class="section-title">💻 Offline / Command-Line Flash Option</h3>
+      <p style="color: var(--text-secondary); font-size: 13.5px; margin-bottom: 12px;">
+        Prefer command line? Flash the pre-compiled binary in one command using <code style="color: var(--accent-green);">esptool.py</code>:
+      </p>
+      <div class="cli-box">pip install esptool
+esptool.py --chip esp32 write_flash 0x0 bin/WAVESCAN_merged_4MB.bin</div>
+    </div>
+
+    <!-- TROUBLESHOOTING -->
+    <div class="card">
+      <h3 class="section-title">🔧 Troubleshooting Tips</h3>
+      <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 13.5px; line-height: 1.6;">
+        <li><strong>No COM port detected?</strong> Make sure your USB cable supports data transfer, and install the USB-to-UART driver (<a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank" style="color: var(--accent-cyan);">CP2102</a> or <a href="http://www.wch-ic.com/downloads/CH341SER_EXE.html" target="_blank" style="color: var(--accent-cyan);">CH340</a>).</li>
+        <li><strong>Connection timeout during flashing?</strong> Press and hold the <strong>BOOT</strong> button on your ESP32 when the installer connects, then release it once flashing starts.</li>
+        <li><strong>Android phone switches back to cellular data?</strong> Because the ESP32 AP does not route to the internet, tap "Stay connected to Wi-Fi" when Android prompts you.</li>
+      </ul>
+    </div>
+
+    <footer class="footer">
+      <p>
+        WΛVΞSCAN &copy; 2026. Released under the <a href="https://github.com/aryamanm77/-WaveScan/blob/main/LICENSE" target="_blank">MIT License</a>.
+      </p>
+      <p style="margin-top: 6px;">
+        View source code on <a href="https://github.com/aryamanm77/-WaveScan" target="_blank">GitHub</a>.
+      </p>
+    </footer>
+
+  </div>
+
+</body>
+</html>
