@@ -101,41 +101,21 @@ void setup() {
     Serial.println("[LittleFS] Warning: Mount failed, using embedded PROGMEM assets.");
   }
 
-  // 2. Wi-Fi Initialization
-  WiFi.mode(WIFI_AP_STA);
+  // 2. Start Wi-Fi Access Point IMMEDIATELY (Instant Boot, 0 Delay!)
+  WiFi.persistent(false);
   WiFi.disconnect(true);
-  delay(100);
+  delay(50);
+  WiFi.mode(WIFI_AP_STA);
 
-  Serial.printf("[Wi-Fi] Attempting connection to Hotspot: %s ...\n", DEFAULT_HOTSPOT_SSID);
-  WiFi.begin(DEFAULT_HOTSPOT_SSID, DEFAULT_HOTSPOT_PASS);
+  WiFi.softAP(FALLBACK_AP_SSID, FALLBACK_AP_PASS);
+  isSoftAPMode = true;
 
-  unsigned long startAttempt = millis();
-  while (WiFi.status() != WL_CONNECTED && (millis() - startAttempt) < HOTSPOT_CONNECT_TIMEOUT_MS) {
-    delay(400);
-    Serial.print(".");
-  }
-  Serial.println();
-
-  if (WiFi.status() == WL_CONNECTED) {
-    isSoftAPMode = false;
-    Serial.println("[Wi-Fi] Connected successfully to Android Hotspot!");
-    Serial.print("[Wi-Fi] Assigned IP Address: http://");
-    Serial.println(WiFi.localIP());
-  } else {
-    // Disconnect STA to stop background association attempts which block scanning!
-    WiFi.disconnect(true);
-    delay(100);
-
-    isSoftAPMode = true;
-    Serial.println("[Wi-Fi] Hotspot not reachable or timed out.");
-    Serial.printf("[Wi-Fi] Activating Fallback Access Point: %s\n", FALLBACK_AP_SSID);
-
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP(FALLBACK_AP_SSID, FALLBACK_AP_PASS);
-    Serial.print("[Wi-Fi] AP IP Address: http://");
-    Serial.println(WiFi.softAPIP());
-    Serial.printf("[Wi-Fi] Connect your phone to '%s' (Password: %s)\n", FALLBACK_AP_SSID, FALLBACK_AP_PASS);
-  }
+  Serial.println("[Wi-Fi] Standalone Access Point Started Instantly!");
+  Serial.printf("[Wi-Fi] Broadcast SSID: %s\n", FALLBACK_AP_SSID);
+  Serial.printf("[Wi-Fi] Password: %s\n", FALLBACK_AP_PASS);
+  Serial.print("[Wi-Fi] Web Dashboard IP: http://");
+  Serial.println(WiFi.softAPIP());
+  Serial.printf("[Wi-Fi] Connect your phone to '%s' (Password: %s)\n", FALLBACK_AP_SSID, FALLBACK_AP_PASS);
 
   // 3. Configure HTTP Server Endpoints
   setupHttpServer();
