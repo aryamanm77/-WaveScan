@@ -1008,53 +1008,16 @@
   }
 
   function initPwaInstallPrompt() {
-    const pwaBanner = document.getElementById('pwa-banner');
-    const btnBannerInstall = document.getElementById('btn-banner-install');
-    const btnBannerDismiss = document.getElementById('btn-banner-dismiss');
     const btnInstallPwa = document.getElementById('btn-install-pwa');
-    const btnTopInstallPwa = document.getElementById('btn-top-install-pwa');
-    const pwaGuideModal = document.getElementById('pwa-guide-modal');
-    const btnClosePwaModal = document.getElementById('btn-close-pwa-modal');
-    const btnPwaModalOk = document.getElementById('btn-pwa-modal-ok');
 
-    function openPwaGuideModal() {
-      if (pwaGuideModal) pwaGuideModal.classList.add('open');
-    }
-
-    function closePwaGuideModal() {
-      if (pwaGuideModal) pwaGuideModal.classList.remove('open');
-    }
-
-    if (btnClosePwaModal) btnClosePwaModal.addEventListener('click', closePwaGuideModal);
-    if (btnPwaModalOk) btnPwaModalOk.addEventListener('click', closePwaGuideModal);
-    if (pwaGuideModal) {
-      pwaGuideModal.addEventListener('click', (e) => {
-        if (e.target === pwaGuideModal) closePwaGuideModal();
-      });
-    }
-
-    // Android Chrome triggers beforeinstallprompt when PWA criteria are met
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
-
-      if (btnInstallPwa) {
-        btnInstallPwa.style.display = 'inline-flex';
-      }
-
-      if (pwaBanner && !sessionStorage.getItem('wavescan_pwa_dismissed')) {
-        setTimeout(() => {
-          pwaBanner.classList.add('visible');
-        }, 1500);
-      }
     });
 
     window.addEventListener('appinstalled', () => {
       deferredInstallPrompt = null;
-      if (pwaBanner) pwaBanner.classList.remove('visible');
-      if (btnInstallPwa) btnInstallPwa.style.display = 'none';
-      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
-      showToast('WΛVΞSCAN installed to home screen!');
+      showToast('WΛVΞSCAN shortcut added to home screen!');
     });
 
     async function triggerInstallFlow() {
@@ -1062,39 +1025,16 @@
         deferredInstallPrompt.prompt();
         const { outcome } = await deferredInstallPrompt.userChoice;
         if (outcome === 'accepted') {
-          showToast('Installing WΛVΞSCAN...');
+          showToast('Adding WΛVΞSCAN...');
         }
         deferredInstallPrompt = null;
-        if (pwaBanner) pwaBanner.classList.remove('visible');
       } else {
-        // Open the in-app PWA install guide modal with exact Chrome steps
-        openPwaGuideModal();
+        showToast('To add to home screen: Tap Chrome menu (⋮) -> Create shortcut', 4000);
       }
-    }
-
-    if (btnBannerInstall) {
-      btnBannerInstall.addEventListener('click', triggerInstallFlow);
     }
 
     if (btnInstallPwa) {
       btnInstallPwa.addEventListener('click', triggerInstallFlow);
-    }
-
-    if (btnTopInstallPwa) {
-      btnTopInstallPwa.addEventListener('click', triggerInstallFlow);
-    }
-
-    if (btnBannerDismiss) {
-      btnBannerDismiss.addEventListener('click', () => {
-        if (pwaBanner) pwaBanner.classList.remove('visible');
-        sessionStorage.setItem('wavescan_pwa_dismissed', '1');
-      });
-    }
-
-    // If running in standalone window mode, hide install triggers
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
-      if (pwaBanner) pwaBanner.classList.remove('visible');
     }
   }
 

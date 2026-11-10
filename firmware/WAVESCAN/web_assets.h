@@ -19,7 +19,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <!-- TOP TOOLBAR -->
@@ -120,12 +120,6 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
         <span id="network-count-text">Scanning...</span>
       </div>
       <div class="status-right">
-        <button class="install-pwa-pill-btn" id="btn-top-install-pwa" title="Install App to Home Screen">
-          <svg viewBox="0 0 24 24" class="btn-icon-pwa">
-            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" fill="currentColor"/>
-          </svg>
-          <span>Install App</span>
-        </button>
         <button class="scan-btn" id="btn-scan-now" title="Trigger Scan">
           <svg viewBox="0 0 24 24" class="btn-icon">
             <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/>
@@ -303,69 +297,10 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
     </button>
   </nav>
 
-  <!-- PWA INSTALL BANNER -->
-  <div class="pwa-install-banner" id="pwa-banner">
-    <div class="pwa-banner-content">
-      <img src="/icons/icon-192.png" alt="WΛVΞSCAN" class="pwa-banner-icon">
-      <div class="pwa-banner-text">
-        <div class="pwa-banner-title">Install WΛVΞSCAN App</div>
-        <div class="pwa-banner-sub">Install to home screen for standalone fullscreen analyzer experience</div>
-      </div>
-      <button class="action-btn success pwa-install-btn" id="btn-banner-install">Install</button>
-      <button class="pwa-banner-close" id="btn-banner-dismiss">&times;</button>
-    </div>
-  </div>
-
-  <!-- PWA INSTALL GUIDE MODAL -->
-  <div class="modal-overlay" id="pwa-guide-modal">
-    <div class="pwa-guide-card">
-      <div class="pwa-guide-header">
-        <div class="pwa-guide-title">
-          <img src="/icons/icon-192.png" alt="WΛVΞSCAN" class="pwa-guide-logo">
-          <span>Install WΛVΞSCAN App</span>
-        </div>
-        <button class="close-modal-btn" id="btn-close-pwa-modal">&times;</button>
-      </div>
-      
-      <div class="pwa-guide-body">
-        <p class="pwa-guide-lead">Install WΛVΞSCAN onto your Android home screen as a standalone native app with ₹0 app store download:</p>
-        
-        <div class="pwa-step-item">
-          <div class="pwa-step-num">1</div>
-          <div class="pwa-step-text">
-            Tap the <strong>Chrome Menu (⋮)</strong> in the top-right corner of Chrome.
-          </div>
-        </div>
-
-        <div class="pwa-step-item">
-          <div class="pwa-step-num">2</div>
-          <div class="pwa-step-text">
-            Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.
-          </div>
-        </div>
-
-        <div class="pwa-step-item">
-          <div class="pwa-step-num">3</div>
-          <div class="pwa-step-text">
-            Tap <strong>"Add"</strong> or <strong>"Install"</strong> to confirm.
-          </div>
-        </div>
-
-        <div class="pwa-guide-footer-note">
-          WΛVΞSCAN will install directly with its custom icon on your Android home screen!
-        </div>
-      </div>
-
-      <div class="pwa-guide-actions">
-        <button class="action-btn success full-width" id="btn-pwa-modal-ok">Got It!</button>
-      </div>
-    </div>
-  </div>
-
   <!-- TOAST NOTIFICATION -->
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
 )rawliteral";
@@ -2721,53 +2656,16 @@ const char APP_JS[] PROGMEM = R"rawliteral(/**
   }
 
   function initPwaInstallPrompt() {
-    const pwaBanner = document.getElementById('pwa-banner');
-    const btnBannerInstall = document.getElementById('btn-banner-install');
-    const btnBannerDismiss = document.getElementById('btn-banner-dismiss');
     const btnInstallPwa = document.getElementById('btn-install-pwa');
-    const btnTopInstallPwa = document.getElementById('btn-top-install-pwa');
-    const pwaGuideModal = document.getElementById('pwa-guide-modal');
-    const btnClosePwaModal = document.getElementById('btn-close-pwa-modal');
-    const btnPwaModalOk = document.getElementById('btn-pwa-modal-ok');
 
-    function openPwaGuideModal() {
-      if (pwaGuideModal) pwaGuideModal.classList.add('open');
-    }
-
-    function closePwaGuideModal() {
-      if (pwaGuideModal) pwaGuideModal.classList.remove('open');
-    }
-
-    if (btnClosePwaModal) btnClosePwaModal.addEventListener('click', closePwaGuideModal);
-    if (btnPwaModalOk) btnPwaModalOk.addEventListener('click', closePwaGuideModal);
-    if (pwaGuideModal) {
-      pwaGuideModal.addEventListener('click', (e) => {
-        if (e.target === pwaGuideModal) closePwaGuideModal();
-      });
-    }
-
-    // Android Chrome triggers beforeinstallprompt when PWA criteria are met
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
-
-      if (btnInstallPwa) {
-        btnInstallPwa.style.display = 'inline-flex';
-      }
-
-      if (pwaBanner && !sessionStorage.getItem('wavescan_pwa_dismissed')) {
-        setTimeout(() => {
-          pwaBanner.classList.add('visible');
-        }, 1500);
-      }
     });
 
     window.addEventListener('appinstalled', () => {
       deferredInstallPrompt = null;
-      if (pwaBanner) pwaBanner.classList.remove('visible');
-      if (btnInstallPwa) btnInstallPwa.style.display = 'none';
-      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
-      showToast('WΛVΞSCAN installed to home screen!');
+      showToast('WΛVΞSCAN shortcut added to home screen!');
     });
 
     async function triggerInstallFlow() {
@@ -2775,39 +2673,16 @@ const char APP_JS[] PROGMEM = R"rawliteral(/**
         deferredInstallPrompt.prompt();
         const { outcome } = await deferredInstallPrompt.userChoice;
         if (outcome === 'accepted') {
-          showToast('Installing WΛVΞSCAN...');
+          showToast('Adding WΛVΞSCAN...');
         }
         deferredInstallPrompt = null;
-        if (pwaBanner) pwaBanner.classList.remove('visible');
       } else {
-        // Open the in-app PWA install guide modal with exact Chrome steps
-        openPwaGuideModal();
+        showToast('To add to home screen: Tap Chrome menu (⋮) -> Create shortcut', 4000);
       }
-    }
-
-    if (btnBannerInstall) {
-      btnBannerInstall.addEventListener('click', triggerInstallFlow);
     }
 
     if (btnInstallPwa) {
       btnInstallPwa.addEventListener('click', triggerInstallFlow);
-    }
-
-    if (btnTopInstallPwa) {
-      btnTopInstallPwa.addEventListener('click', triggerInstallFlow);
-    }
-
-    if (btnBannerDismiss) {
-      btnBannerDismiss.addEventListener('click', () => {
-        if (pwaBanner) pwaBanner.classList.remove('visible');
-        sessionStorage.setItem('wavescan_pwa_dismissed', '1');
-      });
-    }
-
-    // If running in standalone window mode, hide install triggers
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
-      if (pwaBanner) pwaBanner.classList.remove('visible');
     }
   }
 
@@ -2872,7 +2747,7 @@ const char SW_JS[] PROGMEM = R"rawliteral(/**
  * Enables offline caching, fast app startup, and native Android home screen install
  */
 
-const CACHE_NAME = 'wavescan-v2';
+const CACHE_NAME = 'wavescan-v3';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
