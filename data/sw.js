@@ -3,7 +3,7 @@
  * Enables offline caching, fast app startup, and native Android home screen install
  */
 
-const CACHE_NAME = 'wavescan-v1';
+const CACHE_NAME = 'wavescan-v2';
 const STATIC_ASSETS = [
   '/',
   '/style.css',

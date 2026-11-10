@@ -286,7 +286,7 @@ void handleRoot() {
 
 void handleStyle() {
   handleCORS();
-  server.sendHeader("Cache-Control", "public, max-age=3600");
+  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   if (littleFsMounted && LittleFS.exists("/style.css")) {
     File file = LittleFS.open("/style.css", "r");
     server.streamFile(file, "text/css");
@@ -298,7 +298,7 @@ void handleStyle() {
 
 void handleScript() {
   handleCORS();
-  server.sendHeader("Cache-Control", "public, max-age=3600");
+  server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   if (littleFsMounted && LittleFS.exists("/app.js")) {
     File file = LittleFS.open("/app.js", "application/javascript");
     server.streamFile(file, "application/javascript");

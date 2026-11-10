@@ -97,13 +97,14 @@
   // Yellow for Medium: -66 to -75 dBm
   // Red for Bad: < -75 dBm
   function getSignalInfo(rssi) {
-    if (typeof rssi !== 'number' || isNaN(rssi)) {
+    const val = Number(rssi);
+    if (isNaN(val)) {
       return { color: '#E65345', class: 'bad', label: 'Bad' };
     }
-    if (rssi >= -65) {
+    if (val >= -65) {
       return { color: '#00C99A', class: 'good', label: 'Good' };
     }
-    if (rssi >= -75) {
+    if (val >= -75) {
       return { color: '#FFD600', class: 'medium', label: 'Medium' };
     }
     return { color: '#E65345', class: 'bad', label: 'Bad' };
@@ -326,12 +327,15 @@
 
             <div class="network-info-col">
               <div class="network-ssid">${escapeHtml(net.ssid || '[Hidden SSID]')}${tagHtml}</div>
-              <div class="network-meta">Channel ${net.channel || '?'} · ${escapeHtml(securityLabel)} <span class="sig-badge ${sigInfo.class}">${sigInfo.label}</span></div>
+              <div class="network-meta">Channel ${net.channel || '?'} · ${escapeHtml(securityLabel)}</div>
             </div>
 
             <div class="network-rssi-col">
-              <div class="current-rssi ${sigInfo.class}">${currentRSSI} dBm</div>
-              <div class="best-rssi">${bestRSSI} Best</div>
+              <div class="rssi-val-row">
+                <span class="current-rssi-val ${sigInfo.class}">${currentRSSI} dBm</span>
+                <span class="quality-badge ${sigInfo.class}">${sigInfo.label.toUpperCase()}</span>
+              </div>
+              <div class="best-rssi-val">${bestRSSI} dBm Best</div>
             </div>
           </div>
 
@@ -1008,6 +1012,26 @@
     const btnBannerInstall = document.getElementById('btn-banner-install');
     const btnBannerDismiss = document.getElementById('btn-banner-dismiss');
     const btnInstallPwa = document.getElementById('btn-install-pwa');
+    const btnTopInstallPwa = document.getElementById('btn-top-install-pwa');
+    const pwaGuideModal = document.getElementById('pwa-guide-modal');
+    const btnClosePwaModal = document.getElementById('btn-close-pwa-modal');
+    const btnPwaModalOk = document.getElementById('btn-pwa-modal-ok');
+
+    function openPwaGuideModal() {
+      if (pwaGuideModal) pwaGuideModal.classList.add('open');
+    }
+
+    function closePwaGuideModal() {
+      if (pwaGuideModal) pwaGuideModal.classList.remove('open');
+    }
+
+    if (btnClosePwaModal) btnClosePwaModal.addEventListener('click', closePwaGuideModal);
+    if (btnPwaModalOk) btnPwaModalOk.addEventListener('click', closePwaGuideModal);
+    if (pwaGuideModal) {
+      pwaGuideModal.addEventListener('click', (e) => {
+        if (e.target === pwaGuideModal) closePwaGuideModal();
+      });
+    }
 
     // Android Chrome triggers beforeinstallprompt when PWA criteria are met
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -1029,6 +1053,7 @@
       deferredInstallPrompt = null;
       if (pwaBanner) pwaBanner.classList.remove('visible');
       if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
       showToast('WΛVΞSCAN installed to home screen!');
     });
 
@@ -1042,8 +1067,8 @@
         deferredInstallPrompt = null;
         if (pwaBanner) pwaBanner.classList.remove('visible');
       } else {
-        // Helpful fallback instruction for browsers without direct prompt event
-        showToast('To install: Tap Chrome menu (⋮) -> "Add to Home screen" or "Install App"', 4000);
+        // Open the in-app PWA install guide modal with exact Chrome steps
+        openPwaGuideModal();
       }
     }
 
@@ -1055,11 +1080,21 @@
       btnInstallPwa.addEventListener('click', triggerInstallFlow);
     }
 
+    if (btnTopInstallPwa) {
+      btnTopInstallPwa.addEventListener('click', triggerInstallFlow);
+    }
+
     if (btnBannerDismiss) {
       btnBannerDismiss.addEventListener('click', () => {
         if (pwaBanner) pwaBanner.classList.remove('visible');
         sessionStorage.setItem('wavescan_pwa_dismissed', '1');
       });
+    }
+
+    // If running in standalone window mode, hide install triggers
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+      if (btnTopInstallPwa) btnTopInstallPwa.style.display = 'none';
+      if (pwaBanner) pwaBanner.classList.remove('visible');
     }
   }
 
