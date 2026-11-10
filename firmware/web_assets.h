@@ -19,7 +19,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
   <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <!-- TOP TOOLBAR -->
@@ -300,7 +300,7 @@ const char INDEX_HTML[] PROGMEM = R"rawliteral(<!DOCTYPE html>
   <!-- TOAST NOTIFICATION -->
   <div class="toast" id="toast"></div>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
 )rawliteral";
@@ -776,7 +776,7 @@ html, body {
   height: 7px;
   background-color: var(--signal-track);
   border-radius: 3.5px;
-  overflow: visible;
+  overflow: hidden;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
@@ -799,19 +799,6 @@ html, body {
 .signal-bar-fill.bad {
   background: linear-gradient(90deg, #BA1B1B 0%, #E65345 100%);
   box-shadow: 0 0 8px rgba(230, 83, 69, 0.6);
-}
-
-.signal-bar-best-tick {
-  position: absolute;
-  top: -3px;
-  bottom: -3px;
-  width: 3px;
-  background-color: #FFFFFF;
-  border-radius: 1.5px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9), 0 0 3px rgba(255, 255, 255, 0.9);
-  pointer-events: none;
-  z-index: 2;
-  transform: translateX(-50%);
 }
 
 .sig-badge {
@@ -1956,7 +1943,6 @@ const char APP_JS[] PROGMEM = R"rawliteral(/**
       const currentRSSI = net.rssi;
       const bestRSSI = state.bestRSSI[bssidUpper] !== undefined ? state.bestRSSI[bssidUpper] : currentRSSI;
       const currentPct = rssiToPercentage(currentRSSI);
-      const bestPct = rssiToPercentage(bestRSSI);
       const sigInfo = getSignalInfo(currentRSSI);
       const isSecured = net.isSecured || (net.encryption && net.encryption !== 'OPEN');
       const securityLabel = net.encryption || (isSecured ? 'WPA2' : 'OPEN');
@@ -1990,7 +1976,6 @@ const char APP_JS[] PROGMEM = R"rawliteral(/**
           <div class="signal-bar-wrap">
             <div class="signal-bar-track">
               <div class="signal-bar-fill ${sigInfo.class}" style="width: ${currentPct}%;"></div>
-              <div class="signal-bar-best-tick" style="left: ${bestPct}%;" title="Best: ${bestRSSI} dBm"></div>
             </div>
           </div>
         </div>
@@ -2747,7 +2732,7 @@ const char SW_JS[] PROGMEM = R"rawliteral(/**
  * Enables offline caching, fast app startup, and native Android home screen install
  */
 
-const CACHE_NAME = 'wavescan-v3';
+const CACHE_NAME = 'wavescan-v5';
 const STATIC_ASSETS = [
   '/',
   '/style.css',

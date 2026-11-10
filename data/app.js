@@ -308,7 +308,6 @@
       const currentRSSI = net.rssi;
       const bestRSSI = state.bestRSSI[bssidUpper] !== undefined ? state.bestRSSI[bssidUpper] : currentRSSI;
       const currentPct = rssiToPercentage(currentRSSI);
-      const bestPct = rssiToPercentage(bestRSSI);
       const sigInfo = getSignalInfo(currentRSSI);
       const isSecured = net.isSecured || (net.encryption && net.encryption !== 'OPEN');
       const securityLabel = net.encryption || (isSecured ? 'WPA2' : 'OPEN');
@@ -342,7 +341,6 @@
           <div class="signal-bar-wrap">
             <div class="signal-bar-track">
               <div class="signal-bar-fill ${sigInfo.class}" style="width: ${currentPct}%;"></div>
-              <div class="signal-bar-best-tick" style="left: ${bestPct}%;" title="Best: ${bestRSSI} dBm"></div>
             </div>
           </div>
         </div>
