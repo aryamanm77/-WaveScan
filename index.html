@@ -3,298 +3,713 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Install WΛVΞSCAN — Web Flasher for ESP32</title>
-  <meta name="description" content="1-Click Web Flasher for WΛVΞSCAN: High-performance 2.4 GHz Wi-Fi Analyzer for ESP32-WROOM-32 and Android. Zero software installation required.">
+  <title>WΛVΞSCAN — 1-Click ESP32 Web Flasher</title>
+  <meta name="description" content="Next-generation Web Flasher for WΛVΞSCAN: Mobile-first 2.4 GHz Wi-Fi Analyzer for ESP32-WROOM-32 and Android. Zero software installation required.">
   <link rel="icon" type="image/svg+xml" href="data/icons/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
   <style>
     :root {
-      --bg-main: #1e1e24;
-      --bg-card: #282a36;
-      --bg-panel: #20232b;
-      --accent-green: #00c99a;
-      --accent-cyan: #20bceb;
-      --accent-yellow: #ffd600;
-      --accent-red: #e65345;
-      --text-primary: #f0f0f5;
-      --text-secondary: #9a9ea8;
-      --border-color: #383b4a;
+      --bg-void: #08090d;
+      --bg-surface: #0f121a;
+      --bg-card: #151924;
+      --bg-card-hover: #1b2130;
+      --border-glass: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(0, 229, 163, 0.35);
+      
+      --neon-emerald: #00e5a3;
+      --neon-emerald-glow: rgba(0, 229, 163, 0.45);
+      --neon-cyan: #00d2ff;
+      --neon-cyan-glow: rgba(0, 210, 255, 0.4);
+      --signal-yellow: #ffd600;
+      --signal-red: #ff4757;
+      
+      --text-main: #f3f5fa;
+      --text-sub: #8d95a5;
+      --text-muted: #575e6d;
+
+      --font-ui: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "JetBrains Mono", Consolas, monospace;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background: linear-gradient(180deg, #181920 0%, #20232b 100%);
-      color: var(--text-primary);
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: var(--font-ui);
       min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* BACKGROUND GLOW ORBS */
+    .ambient-glow-1 {
+      position: fixed;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(0, 229, 163, 0.15) 0%, rgba(0, 210, 255, 0.05) 45%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: -150px;
+      right: 10%;
+      width: 600px;
+      height: 450px;
+      background: radial-gradient(ellipse, rgba(0, 210, 255, 0.08) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* GRID OVERLAY */
+    .grid-backdrop {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+      mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* TOP NAVBAR */
+    .top-nav {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 32px 16px 64px;
+      justify-content: space-between;
+      margin-bottom: 44px;
     }
 
-    .container {
-      max-width: 760px;
-      width: 100%;
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
     }
 
-    /* HEADER */
-    header {
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(0, 229, 163, 0.2), rgba(0, 210, 255, 0.1));
+      border: 1px solid var(--border-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--neon-emerald-glow);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--neon-emerald);
+    }
+
+    .brand-text {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #fff;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-glass);
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* HERO SECTION */
+    .hero {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 44px;
     }
 
-    .brand-badge {
+    .status-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(0, 201, 154, 0.12);
-      border: 1px solid rgba(0, 201, 154, 0.35);
       padding: 6px 14px;
       border-radius: 20px;
-      color: var(--accent-green);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 1px;
+      background: rgba(0, 229, 163, 0.1);
+      border: 1px solid rgba(0, 229, 163, 0.3);
+      color: var(--neon-emerald);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      margin-bottom: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 16px rgba(0, 229, 163, 0.15);
     }
 
-    h1 {
-      font-size: 38px;
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-emerald);
+      box-shadow: 0 0 8px var(--neon-emerald);
+      animation: pulseAnim 1.6s infinite alternate;
+    }
+
+    @keyframes pulseAnim {
+      from { opacity: 0.4; transform: scale(0.85); }
+      to { opacity: 1; transform: scale(1.15); }
+    }
+
+    .hero-title {
+      font-size: 48px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #ffffff 40%, var(--accent-green) 100%);
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff 40%, #b0b8ca 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    .subtitle {
-      color: var(--text-secondary);
-      font-size: 16px;
-      line-height: 1.5;
-      max-width: 600px;
+    .hero-title span {
+      background: linear-gradient(135deg, var(--neon-emerald) 0%, var(--neon-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-lead {
+      color: var(--text-sub);
+      font-size: 17px;
+      max-width: 620px;
       margin: 0 auto;
+      line-height: 1.6;
     }
 
-    /* MAIN INSTALL CARD */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
-      margin-bottom: 28px;
+    /* HARDWARE FLASHER STAGE (CORE COMPONENT) */
+    .flasher-stage {
+      background: linear-gradient(180deg, rgba(21, 25, 36, 0.85) 0%, rgba(15, 18, 26, 0.95) 100%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+      backdrop-filter: blur(20px);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .flash-cta-box {
-      text-align: center;
-      padding: 24px 16px;
-      background: rgba(32, 188, 235, 0.04);
-      border: 1px dashed rgba(32, 188, 235, 0.3);
-      border-radius: 12px;
-      margin-bottom: 28px;
+    .flasher-stage::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon-emerald), transparent);
     }
 
-    .flash-btn-wrapper {
-      margin: 18px 0;
+    /* ESP32 BOARD GRAPHIC */
+    .board-visual {
       display: flex;
       justify-content: center;
+      align-items: center;
+      margin-bottom: 28px;
     }
 
-    /* Custom Web Flasher Button Style */
+    .esp32-svg {
+      width: 280px;
+      height: auto;
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.6));
+    }
+
+    .rf-wave {
+      animation: wavePulse 2s infinite ease-out;
+      transform-origin: 140px 30px;
+    }
+
+    .rf-wave-2 {
+      animation: wavePulse 2s infinite ease-out 0.6s;
+      transform-origin: 140px 30px;
+    }
+
+    @keyframes wavePulse {
+      0% { opacity: 0.1; transform: scale(0.9); }
+      50% { opacity: 0.8; }
+      100% { opacity: 0; transform: scale(1.3); }
+    }
+
+    /* FLASH ACTION ZONE */
+    .action-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Customizing the Web Component Install Button */
     esp-web-install-button {
-      --esp-tools-button-border-radius: 10px;
-      --esp-tools-button-color: #ffffff;
-      --esp-tools-button-background: #00c99a;
-      --esp-tools-button-padding: 14px 28px;
-      --esp-tools-button-font-size: 16px;
-      --esp-tools-button-font-weight: 700;
+      --esp-tools-button-border-radius: 14px;
+      --esp-tools-button-color: #06110d;
+      --esp-tools-button-background: linear-gradient(135deg, #00e5a3 0%, #00d2ff 100%);
+      --esp-tools-button-padding: 16px 42px;
+      --esp-tools-button-font-size: 17px;
+      --esp-tools-button-font-weight: 800;
     }
 
-    .custom-flash-btn {
+    .hero-flash-btn {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      background: linear-gradient(135deg, #00c99a 0%, #009e78 100%);
-      color: #ffffff;
-      font-size: 17px;
-      font-weight: 700;
-      padding: 15px 32px;
-      border-radius: 10px;
+      justify-content: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #00e5a3 0%, #00bfa5 50%, #00d2ff 100%);
+      color: #071510;
+      font-size: 18px;
+      font-weight: 800;
+      padding: 18px 46px;
+      border-radius: 16px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(0, 201, 154, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .custom-flash-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 26px rgba(0, 201, 154, 0.55);
-    }
-
-    .custom-flash-btn:active {
-      transform: translateY(1px);
-    }
-
-    .browser-compat-note {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 10px;
-    }
-
-    .browser-compat-note strong {
-      color: var(--accent-cyan);
-    }
-
-    .compat-warning {
-      background: rgba(230, 83, 69, 0.12);
-      border: 1px solid var(--accent-red);
-      color: #ff9d94;
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 13.5px;
-      margin-top: 14px;
-      text-align: left;
-    }
-
-    /* 3-STEP FLOW */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 24px;
-    }
-
-    @media (max-width: 680px) {
-      .steps-grid {
-        grid-template-columns: 1fr;
-      }
-      .card {
-        padding: 22px 16px;
-      }
-      h1 {
-        font-size: 30px;
-      }
-    }
-
-    .step-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 18px 16px;
+      box-shadow: 0 10px 32px rgba(0, 229, 163, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
     }
 
-    .step-num {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: var(--accent-cyan);
-      color: #12141a;
-      font-size: 13px;
-      font-weight: 800;
+    .hero-flash-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 16px 44px rgba(0, 229, 163, 0.55), 0 0 25px rgba(0, 210, 255, 0.4);
+    }
+
+    .hero-flash-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+
+    .compat-pill {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-
-    .step-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--text-primary);
-    }
-
-    .step-desc {
+      gap: 8px;
       font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.45;
+      color: var(--text-sub);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border-glass);
     }
 
-    .code-pill {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--accent-green);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-      font-size: 12px;
-      margin-top: 4px;
+    .compat-pill strong {
+      color: var(--neon-cyan);
     }
 
-    /* SPECS & DETAILS */
-    .specs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
+    .browser-alert {
+      display: none;
+      background: rgba(255, 71, 87, 0.12);
+      border: 1px solid var(--signal-red);
+      color: #ffa4ac;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      max-width: 520px;
+      text-align: center;
+      margin-top: 14px;
     }
 
-    @media (max-width: 540px) {
-      .specs-grid {
-        grid-template-columns: 1fr;
-      }
+    /* 3-STEP PIPELINE */
+    .steps-section {
+      margin-bottom: 36px;
     }
 
-    .spec-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: var(--bg-panel);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
+    .section-headline {
       font-size: 13px;
-    }
-
-    .spec-label {
-      color: var(--text-secondary);
-    }
-
-    .spec-val {
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    /* TERMINAL & CLI BOX */
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 12px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .cli-box {
-      background: #14151b;
-      border: 1px solid var(--border-color);
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 720px) {
+      .steps-row {
+        grid-template-columns: 1fr;
+      }
+      .hero-title {
+        font-size: 34px;
+      }
+      .flasher-stage {
+        padding: 28px 16px;
+      }
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 16px;
+      padding: 22px 20px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .step-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-2px);
+      background: var(--bg-card-hover);
+    }
+
+    .step-badge {
+      width: 32px;
+      height: 32px;
       border-radius: 10px;
-      padding: 14px 16px;
-      font-family: Consolas, Monaco, monospace;
+      background: rgba(0, 210, 255, 0.12);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      color: var(--neon-cyan);
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .step-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 13.5px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .code-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: rgba(0, 229, 163, 0.1);
+      color: var(--neon-emerald);
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 229, 163, 0.25);
+      margin-top: 4px;
+    }
+
+    /* INTERACTIVE LIVE PREVIEW TEASER */
+    .preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-title-box h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .preview-title-box p {
       font-size: 13px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .app-badge-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(0, 229, 163, 0.15);
+      color: var(--neon-emerald);
+      border: 1px solid rgba(0, 229, 163, 0.35);
+    }
+
+    /* REAL SIMULATED WΛVΞSCAN ROW DEMO */
+    .simulated-screen {
+      background: #20232b;
+      border: 1px solid #333846;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-network-row {
+      background: #292929;
+      border-radius: 8px;
+      padding: 12px 14px;
+      border: 1px solid #383838;
+    }
+
+    .demo-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .demo-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .demo-ssid {
+      font-size: 15px;
+      font-weight: 700;
+      color: #eee;
+    }
+
+    .demo-meta {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .demo-right {
+      text-align: right;
+    }
+
+    .demo-rssi {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--neon-emerald);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .demo-best {
+      font-size: 11px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    /* BADGES */
+    .pill-good {
+      background: #00c99a;
+      color: #082119;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      box-shadow: 0 0 8px rgba(0, 201, 154, 0.45);
+    }
+
+    .pill-med {
+      background: #ffd600;
+      color: #2b2400;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      box-shadow: 0 0 8px rgba(255, 214, 0, 0.45);
+    }
+
+    .pill-bad {
+      background: #e65345;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      box-shadow: 0 0 8px rgba(230, 83, 69, 0.45);
+    }
+
+    /* BAR */
+    .demo-bar-track {
+      width: 100%;
+      height: 7px;
+      background: #3b3630;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .demo-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #00A37B, #00C99A);
+      box-shadow: 0 0 8px rgba(0, 201, 154, 0.6);
+    }
+
+    .demo-best-tick {
+      position: absolute;
+      top: -3px;
+      bottom: -3px;
+      width: 3px;
+      background: #fff;
+      border-radius: 2px;
+      box-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
+      transform: translateX(-50%);
+    }
+
+    /* TERMINAL LOG SIMULATION */
+    .terminal-card {
+      background: #0a0c12;
+      border: 1px solid var(--border-glass);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .term-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot-r { width: 10px; height: 10px; border-radius: 50%; background: #ff5f56; }
+    .dot-y { width: 10px; height: 10px; border-radius: 50%; background: #ffbd2e; }
+    .dot-g { width: 10px; height: 10px; border-radius: 50%; background: #27c93f; }
+
+    .term-title {
+      color: var(--text-muted);
+      font-size: 11px;
+      letter-spacing: 0.8px;
+    }
+
+    .term-body {
       color: #9feaf9;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .term-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--neon-emerald);
+      vertical-align: middle;
+      animation: blink 1s infinite;
+      margin-left: 4px;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    /* DIRECT DOWNLOADS & FOOTER */
+    .dl-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .dl-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .dl-chip:hover {
+      border-color: var(--neon-emerald);
+      background: rgba(0, 229, 163, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .dl-chip svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--neon-emerald);
     }
 
     .footer {
       text-align: center;
-      margin-top: 36px;
+      margin-top: 48px;
       font-size: 13px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
     }
 
     .footer a {
-      color: var(--accent-cyan);
+      color: var(--neon-cyan);
       text-decoration: none;
     }
 
@@ -305,143 +720,325 @@
 </head>
 <body>
 
-  <div class="container">
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+  <div class="grid-backdrop"></div>
 
-    <header>
-      <div class="brand-badge">⚡ Official Web Installer</div>
-      <h1>WΛVΞSCAN</h1>
-      <p class="subtitle">
-        Portable Mobile-First 2.4 GHz Wi-Fi Analyzer for ESP32-WROOM-32 & Android.
-        Flash firmware directly from your browser with <strong>₹0 hardware budget</strong> & zero software installation.
+  <div class="wrapper">
+
+    <!-- TOP NAVIGATION -->
+    <nav class="top-nav">
+      <a href="#" class="nav-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+        </div>
+        <span class="brand-text">WΛVΞSCAN</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="https://github.com/aryamanm77/-WaveScan" target="_blank" class="nav-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub Repo
+        </a>
+      </div>
+    </nav>
+
+    <!-- HERO TEXT -->
+    <header class="hero">
+      <div class="status-badge">
+        <span class="pulse-dot"></span>
+        WebSerial Flash Engine Active
+      </div>
+      <h1 class="hero-title">
+        Web-Flash <span>WΛVΞSCAN</span> Directly into ESP32
+      </h1>
+      <p class="hero-lead">
+        Turn your ESP32-WROOM-32 into a professional mobile Wi-Fi Analyzer. Connect your board via USB and install the firmware in 1 click — zero IDE, zero compilers, ₹0 extra cost.
       </p>
     </header>
 
-    <!-- MAIN INSTALL CARD -->
-    <div class="card">
-      <div class="flash-cta-box">
-        <h2 style="font-size: 22px; margin-bottom: 6px;">Connect & Flash Your ESP32</h2>
-        <p style="color: var(--text-secondary); font-size: 14px;">
-          Plug your ESP32-WROOM-32 board into this PC via USB, then click the button below.
-        </p>
+    <!-- CORE HARDWARE FLASHER STAGE -->
+    <div class="flasher-stage">
+      <!-- HARDWARE ILLUSTRATION -->
+      <div class="board-visual">
+        <svg class="esp32-svg" viewBox="0 0 280 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- PCB Body -->
+          <rect x="30" y="15" width="220" height="150" rx="12" fill="#181e29" stroke="#2c3547" stroke-width="2"/>
+          
+          <!-- Golden Pin Headers (Left & Right) -->
+          <g fill="#e5a34a">
+            <rect x="18" y="25" width="8" height="6" rx="1"/>
+            <rect x="18" y="37" width="8" height="6" rx="1"/>
+            <rect x="18" y="49" width="8" height="6" rx="1"/>
+            <rect x="18" y="61" width="8" height="6" rx="1"/>
+            <rect x="18" y="73" width="8" height="6" rx="1"/>
+            <rect x="18" y="85" width="8" height="6" rx="1"/>
+            <rect x="18" y="97" width="8" height="6" rx="1"/>
+            <rect x="18" y="109" width="8" height="6" rx="1"/>
+            <rect x="18" y="121" width="8" height="6" rx="1"/>
+            <rect x="18" y="133" width="8" height="6" rx="1"/>
+            <rect x="18" y="145" width="8" height="6" rx="1"/>
 
-        <div class="flash-btn-wrapper">
-          <esp-web-install-button manifest="./manifest.json">
-            <button slot="activate" class="custom-flash-btn">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+            <rect x="254" y="25" width="8" height="6" rx="1"/>
+            <rect x="254" y="37" width="8" height="6" rx="1"/>
+            <rect x="254" y="49" width="8" height="6" rx="1"/>
+            <rect x="254" y="61" width="8" height="6" rx="1"/>
+            <rect x="254" y="73" width="8" height="6" rx="1"/>
+            <rect x="254" y="85" width="8" height="6" rx="1"/>
+            <rect x="254" y="97" width="8" height="6" rx="1"/>
+            <rect x="254" y="109" width="8" height="6" rx="1"/>
+            <rect x="254" y="121" width="8" height="6" rx="1"/>
+            <rect x="254" y="133" width="8" height="6" rx="1"/>
+            <rect x="254" y="145" width="8" height="6" rx="1"/>
+          </g>
+
+          <!-- Inverted-F PCB Antenna (Top) -->
+          <path d="M100 20 H180 V35 H100 Z" fill="#b8860b"/>
+          <path d="M115 35 V42 M135 35 V42 M155 35 V42 M175 35 V42" stroke="#b8860b" stroke-width="2"/>
+          
+          <!-- Animated RF Waves -->
+          <path class="rf-wave" d="M120 12 C 130 5, 150 5, 160 12" stroke="#00e5a3" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="rf-wave-2" d="M105 5 C 125 -6, 155 -6, 175 5" stroke="#00d2ff" stroke-width="2" stroke-linecap="round"/>
+
+          <!-- ESP-WROOM-32 Metal Can Shield -->
+          <rect x="75" y="52" width="130" height="90" rx="6" fill="#2d3342" stroke="#485268" stroke-width="1.5"/>
+          <text x="140" y="86" fill="#a4b0c6" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" text-anchor="middle">ESP-WROOM-32</text>
+          <text x="140" y="102" fill="#67738d" font-family="'JetBrains Mono', monospace" font-size="9" text-anchor="middle">WΛVΞSCAN CORE</text>
+          <text x="140" y="118" fill="#00e5a3" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="600" text-anchor="middle">2.4 GHz 802.11 b/g/n</text>
+
+          <!-- Status LEDs -->
+          <circle cx="54" cy="40" r="3.5" fill="#ff4757" filter="drop-shadow(0 0 4px #ff4757)"/>
+          <text x="63" y="43" fill="#ff6b81" font-size="8" font-family="'JetBrains Mono', monospace">PWR</text>
+
+          <circle cx="54" cy="55" r="3.5" fill="#00e5a3" filter="drop-shadow(0 0 6px #00e5a3)"/>
+          <text x="63" y="58" fill="#00e5a3" font-size="8" font-family="'JetBrains Mono', monospace">WIFI</text>
+
+          <!-- Micro-USB / USB-C Port -->
+          <rect x="118" y="156" width="44" height="18" rx="3" fill="#0f1118" stroke="#3d4454" stroke-width="1.5"/>
+        </svg>
+      </div>
+
+      <!-- MAIN FLASH CTA BUTTON -->
+      <div class="action-zone">
+        <esp-web-install-button manifest="./manifest.json">
+          <button slot="activate" class="hero-flash-btn">
+            <svg class="btn-svg" viewBox="0 0 24 24">
+              <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+            </svg>
+            Connect & Flash ESP32
+          </button>
+          
+          <div slot="unsupported">
+            <div class="browser-alert" style="display: block;">
+              <strong>⚠️ Web Serial Not Supported</strong><br>
+              Please open this page in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> on Windows, Mac, or Linux to enable 1-click web flashing.
+            </div>
+          </div>
+          
+          <div slot="not-allowed">
+            <div class="browser-alert" style="display: block;">
+              <strong>🔒 HTTPS / Localhost Context Required</strong><br>
+              Web Serial requires a secure context (HTTPS) or http://localhost/.
+            </div>
+          </div>
+        </esp-web-install-button>
+
+        <div class="compat-pill">
+          <span>Supported on:</span>
+          <strong>Google Chrome</strong> &bull;
+          <strong>Microsoft Edge</strong> &bull;
+          <strong>Opera</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-STEP PIPELINE -->
+    <div class="steps-section">
+      <div class="section-headline">⚡ 3-Step Setup Guide</div>
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-badge">1</div>
+          <div class="step-title">Connect Hardware</div>
+          <div class="step-desc">
+            Connect your <strong>ESP32-WROOM-32</strong> to this computer using a micro-USB or USB-C data cable.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-badge">2</div>
+          <div class="step-title">1-Click Flash</div>
+          <div class="step-desc">
+            Click <strong>Connect & Flash</strong>, select your port (<span class="code-tag">CP2102</span> or <span class="code-tag">CH340</span>), and wait ~30s.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-badge">3</div>
+          <div class="step-title">Open on Android</div>
+          <div class="step-desc">
+            Connect phone to Wi-Fi:<br>
+            <span class="code-tag">SSID: WΛVΞSCAN</span><br>
+            <span class="code-tag">Pass: wavescan123</span><br>
+            Open <span class="code-tag">http://192.168.4.1/</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE UI PREVIEW TEASER -->
+    <div class="preview-card">
+      <div class="preview-header">
+        <div class="preview-title-box">
+          <h3>📱 Native Android Mobile UI</h3>
+          <p>Faithful recreation of the classic Android Wi-Fi Analyzer with enhanced precision signal indicators</p>
+        </div>
+        <span class="app-badge-pill">STANDALONE PWA</span>
+      </div>
+
+      <!-- Real Simulated Screen Sample -->
+      <div class="simulated-screen">
+        <!-- Sample Row 1: Good -->
+        <div class="demo-network-row">
+          <div class="demo-top">
+            <div class="demo-left">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#00c99a">
+                <path d="M12 18.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
+                <path d="M12 14c-2.3 0-4.38.93-5.9 2.44l1.42 1.42C8.67 16.71 10.24 16 12 16s3.33.71 4.48 1.86l1.42-1.42C16.38 14.93 14.3 14 12 14z"/>
+                <path d="M12 9.5c-3.53 0-6.73 1.43-9.05 3.75l1.42 1.42C6.31 12.73 9 11.5 12 11.5s5.69 1.23 7.63 3.17l1.42-1.42C18.73 10.93 15.53 9.5 12 9.5z"/>
+                <path d="M12 5C7.27 5 2.99 6.91-.01 10.02l1.42 1.42C3.84 8.79 7.69 7 12 7s8.16 1.79 10.59 4.44l1.42-1.42C21.01 6.91 16.73 5 12 5z"/>
               </svg>
-              Flash WΛVΞSCAN Firmware
-            </button>
-            <div slot="unsupported">
-              <div class="compat-warning">
-                <strong>⚠️ Web Serial Not Supported</strong><br>
-                Please open this page in <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> on Windows, macOS, Linux, or Android with OTG to enable 1-click web flashing.
+              <div>
+                <div class="demo-ssid">AeroMesh-5G_Ext</div>
+                <div class="demo-meta">Channel 6 &bull; WPA2/WPA3 Personal</div>
               </div>
             </div>
-            <div slot="not-allowed">
-              <div class="compat-warning">
-                <strong>🔒 HTTPS Required</strong><br>
-                Web Serial requires a secure HTTPS context or localhost.
+            <div class="demo-right">
+              <div class="demo-rssi">
+                <span>-52 dBm</span>
+                <span class="pill-good">GOOD</span>
               </div>
+              <div class="demo-best">-48 dBm Best</div>
             </div>
-          </esp-web-install-button>
-        </div>
-
-        <p class="browser-compat-note">
-          Supported browsers: <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Opera</strong> (Desktop & Android OTG)
-        </p>
-      </div>
-
-      <!-- 3-STEP QUICKSTART -->
-      <h3 class="section-title">🚀 How It Works</h3>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">1</div>
-          <div class="step-title">Connect via USB</div>
-          <div class="step-desc">
-            Connect your ESP32-WROOM-32 board to your computer using a micro-USB / USB-C data cable.
+          </div>
+          <div class="demo-bar-track">
+            <div class="demo-bar-fill" style="width: 86%;"></div>
+            <div class="demo-best-tick" style="left: 92%;" title="Best: -48 dBm"></div>
           </div>
         </div>
 
-        <div class="step-card">
-          <div class="step-num">2</div>
-          <div class="step-title">Flash Firmware</div>
-          <div class="step-desc">
-            Click <strong>Flash WΛVΞSCAN</strong> above, select your ESP32 port (CP2102 or CH340), and wait ~30 seconds for verification.
+        <!-- Sample Row 2: Medium -->
+        <div class="demo-network-row">
+          <div class="demo-top">
+            <div class="demo-left">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffd600">
+                <path d="M12 18.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
+                <path d="M12 14c-2.3 0-4.38.93-5.9 2.44l1.42 1.42C8.67 16.71 10.24 16 12 16s3.33.71 4.48 1.86l1.42-1.42C16.38 14.93 14.3 14 12 14z"/>
+                <path d="M12 9.5c-3.53 0-6.73 1.43-9.05 3.75l1.42 1.42C6.31 12.73 9 11.5 12 11.5s5.69 1.23 7.63 3.17l1.42-1.42C18.73 10.93 15.53 9.5 12 9.5z"/>
+              </svg>
+              <div>
+                <div class="demo-ssid">Office_WLAN_North</div>
+                <div class="demo-meta">Channel 1 &bull; WPA2 Enterprise</div>
+              </div>
+            </div>
+            <div class="demo-right">
+              <div class="demo-rssi" style="color: #ffd600;">
+                <span>-71 dBm</span>
+                <span class="pill-med">MEDIUM</span>
+              </div>
+              <div class="demo-best">-67 dBm Best</div>
+            </div>
+          </div>
+          <div class="demo-bar-track">
+            <div class="demo-bar-fill" style="width: 58%; background: linear-gradient(90deg, #D49B28, #FFD600); box-shadow: 0 0 8px rgba(255, 214, 0, 0.5);"></div>
+            <div class="demo-best-tick" style="left: 66%;" title="Best: -67 dBm"></div>
           </div>
         </div>
 
-        <div class="step-card">
-          <div class="step-num">3</div>
-          <div class="step-title">Connect & Scan</div>
-          <div class="step-desc">
-            Connect your phone Wi-Fi to:<br>
-            <span class="code-pill">SSID: WΛVΞSCAN</span><br>
-            <span class="code-pill">Pass: wavescan123</span><br>
-            Open <span class="code-pill">http://192.168.4.1/</span> in Chrome!
+        <!-- Sample Row 3: Bad -->
+        <div class="demo-network-row">
+          <div class="demo-top">
+            <div class="demo-left">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="#e65345">
+                <path d="M12 18.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
+                <path d="M12 14c-2.3 0-4.38.93-5.9 2.44l1.42 1.42C8.67 16.71 10.24 16 12 16s3.33.71 4.48 1.86l1.42-1.42C16.38 14.93 14.3 14 12 14z"/>
+              </svg>
+              <div>
+                <div class="demo-ssid">Public_Free_Wi-Fi</div>
+                <div class="demo-meta">Channel 11 &bull; OPEN</div>
+              </div>
+            </div>
+            <div class="demo-right">
+              <div class="demo-rssi" style="color: #e65345;">
+                <span>-84 dBm</span>
+                <span class="pill-bad">BAD</span>
+              </div>
+              <div class="demo-best">-81 dBm Best</div>
+            </div>
+          </div>
+          <div class="demo-bar-track">
+            <div class="demo-bar-fill" style="width: 32%; background: linear-gradient(90deg, #BA1B1B, #E65345); box-shadow: 0 0 8px rgba(230, 83, 69, 0.5);"></div>
+            <div class="demo-best-tick" style="left: 38%;" title="Best: -81 dBm"></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TECHNICAL SPECS -->
-    <div class="card">
-      <h3 class="section-title">⚙️ Firmware Configuration</h3>
-      <div class="specs-grid">
-        <div class="spec-item">
-          <span class="spec-label">Target Chip</span>
-          <span class="spec-val">ESP32-WROOM-32 (2.4 GHz)</span>
+    <!-- TERMINAL EMBED -->
+    <div class="terminal-card">
+      <div class="terminal-header">
+        <div class="term-dots">
+          <span class="dot-r"></span>
+          <span class="dot-y"></span>
+          <span class="dot-g"></span>
         </div>
-        <div class="spec-item">
-          <span class="spec-label">Default Broadcast SSID</span>
-          <span class="spec-val" style="color: var(--accent-green);">WΛVΞSCAN</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-label">Default AP Password</span>
-          <span class="spec-val">wavescan123</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-label">Default IP Gateway</span>
-          <span class="spec-val">192.168.4.1</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-label">Web UI Storage</span>
-          <span class="spec-val">PROGMEM + LittleFS Fallback</span>
-        </div>
-        <div class="spec-item">
-          <span class="spec-label">PWA Offline Mode</span>
-          <span class="spec-val">Supported (CacheStorage)</span>
-        </div>
+        <span class="term-title">ESP32 SERIAL DIAGNOSTIC CONSOLE</span>
+        <span>115200 BAUD</span>
+      </div>
+      <div class="term-body">
+        <div>[SYSTEM] Target: ESP32-WROOM-32 (Xtensa Dual-Core @ 240 MHz)</div>
+        <div>[MEMORY] Flash Size: 4MB QIO | Free Heap: ~270 KB</div>
+        <div>[FIRMWARE] WΛVΞSCAN v1.0.0 — Asynchronous 2.4 GHz RF Analyzer</div>
+        <div>[RADIO] Channels: 1 to 14 (2412 - 2484 MHz) | Scanning Interval: 3.5s</div>
+        <div>[NETWORK] AP Broadcast SSID: <strong style="color: #00e5a3;">WΛVΞSCAN</strong> (Pass: wavescan123)</div>
+        <div>[STATUS] Ready to flash over Web Serial...<span class="term-cursor"></span></div>
       </div>
     </div>
 
-    <!-- MANUAL ESPTOOL OPTION -->
-    <div class="card">
-      <h3 class="section-title">💻 Offline / Command-Line Flash Option</h3>
-      <p style="color: var(--text-secondary); font-size: 13.5px; margin-bottom: 12px;">
-        Prefer command line? Flash the pre-compiled binary in one command using <code style="color: var(--accent-green);">esptool.py</code>:
+    <!-- DIRECT BINARY DOWNLOADS -->
+    <div class="preview-card" style="padding: 22px;">
+      <div class="section-headline" style="margin-bottom: 10px;">💾 Direct Binary Downloads & CLI</div>
+      <p style="font-size: 13.5px; color: var(--text-sub); margin-bottom: 14px;">
+        For offline engineers or batch factory flashing using <code style="color: var(--neon-emerald);">esptool.py</code>:
       </p>
-      <div class="cli-box">pip install esptool
-esptool.py --chip esp32 write_flash 0x0 bin/WAVESCAN_merged_4MB.bin</div>
+      
+      <div class="dl-row">
+        <a href="bin/WAVESCAN_merged_4MB.bin" download class="dl-chip">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Unified Flash Image (4MB Merged @ 0x0)
+        </a>
+        <a href="bin/firmware.bin" download class="dl-chip">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          App Firmware (1.07 MB @ 0x10000)
+        </a>
+        <a href="bin/bootloader.bin" download class="dl-chip">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Bootloader (25 KB @ 0x1000)
+        </a>
+        <a href="bin/partitions.bin" download class="dl-chip">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Partitions (3 KB @ 0x8000)
+        </a>
+      </div>
     </div>
 
-    <!-- TROUBLESHOOTING -->
-    <div class="card">
-      <h3 class="section-title">🔧 Troubleshooting Tips</h3>
-      <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 13.5px; line-height: 1.6;">
-        <li><strong>No COM port detected?</strong> Make sure your USB cable supports data transfer, and install the USB-to-UART driver (<a href="https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers" target="_blank" style="color: var(--accent-cyan);">CP2102</a> or <a href="http://www.wch-ic.com/downloads/CH341SER_EXE.html" target="_blank" style="color: var(--accent-cyan);">CH340</a>).</li>
-        <li><strong>Connection timeout during flashing?</strong> Press and hold the <strong>BOOT</strong> button on your ESP32 when the installer connects, then release it once flashing starts.</li>
-        <li><strong>Android phone switches back to cellular data?</strong> Because the ESP32 AP does not route to the internet, tap "Stay connected to Wi-Fi" when Android prompts you.</li>
-      </ul>
-    </div>
-
+    <!-- FOOTER -->
     <footer class="footer">
-      <p>
-        WΛVΞSCAN &copy; 2026. Released under the <a href="https://github.com/aryamanm77/-WaveScan/blob/main/LICENSE" target="_blank">MIT License</a>.
-      </p>
-      <p style="margin-top: 6px;">
-        View source code on <a href="https://github.com/aryamanm77/-WaveScan" target="_blank">GitHub</a>.
-      </p>
+      <p>WΛVΞSCAN &bull; Built with ₹0 Hardware Budget for the ESP32 & Maker Community.</p>
+      <p style="margin-top: 6px;">Released under the <a href="https://github.com/aryamanm77/-WaveScan/blob/main/LICENSE" target="_blank">MIT License</a>. View on <a href="https://github.com/aryamanm77/-WaveScan" target="_blank">GitHub</a>.</p>
     </footer>
 
   </div>
